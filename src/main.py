@@ -14,7 +14,8 @@ class Game:
             "Mundo do Super Pirada - by: Silvanei Martins")
         self.clock = pygame.time.Clock()
 
-        self.tmx_maps = {0: load_pygame(join('src', 'data', 'levels', 'omni.tmx'))}
+        self.tmx_maps = {0: load_pygame(
+            join('src', 'data', 'levels', 'omni.tmx'))}
         self.current_stage = Level(self.tmx_maps[0])
 
     def run(self):
