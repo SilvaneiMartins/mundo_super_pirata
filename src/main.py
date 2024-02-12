@@ -20,8 +20,31 @@ class Game:
     def import_assets(self):
         self.level_frames = {
             'flag': import_folder('src', 'graphics', 'level', 'flag'),
-            'saw': import_folder('src', 'graphics', 'enemies', 'saw', 'animation'),
-            'floor_spike': import_folder('src', 'graphics', 'enemies', 'floor_spikes'),
+			'saw': import_folder('src', 'graphics', 'enemies', 'saw', 'animation'),
+			'floor_spike': import_folder('src', 'graphics','enemies', 'floor_spikes'),
+			'palms': import_sub_folders('src', 'graphics', 'level', 'palms'),
+			'candle': import_folder('src', 'graphics','level', 'candle'),
+			'window': import_folder('src', 'graphics','level', 'window'),
+			'big_chain': import_folder('src', 'graphics','level', 'big_chains'),
+			'small_chain': import_folder('src', 'graphics','level', 'small_chains'),
+			'candle_light': import_folder('src', 'graphics','level', 'candle light'),
+			'player': import_sub_folders('src', 'graphics','player'),
+			'saw': import_folder('src', 'graphics', 'enemies', 'saw', 'animation'),
+			'saw_chain': import_image('src',  'graphics', 'enemies', 'saw', 'saw_chain'),
+			'helicopter': import_folder('src', 'graphics', 'level', 'helicopter'),
+			'boat': import_folder('src',  'graphics', 'objects', 'boat'),
+			'spike': import_image('src',  'graphics', 'enemies', 'spike_ball', 'Spiked Ball'),
+			'spike_chain': import_image('src',  'graphics', 'enemies', 'spike_ball', 'spiked_chain'),
+			'tooth': import_folder('src', 'graphics','enemies', 'tooth', 'run'),
+			'shell': import_sub_folders('src', 'graphics','enemies', 'shell'),
+			'pearl': import_image('src',  'graphics', 'enemies', 'bullets', 'pearl'),
+			'items': import_sub_folders('src', 'graphics', 'items'),
+			'particle': import_folder('src', 'graphics', 'effects', 'particle'),
+			'water_top': import_folder('src', 'graphics', 'level', 'water', 'top'),
+			'water_body': import_image('src', 'graphics', 'level', 'water', 'body'),
+			'bg_tiles': import_folder_dict('src', 'graphics', 'level', 'bg', 'tiles'),
+			'cloud_small': import_folder('src', 'graphics','level', 'clouds', 'small'),
+			'cloud_large': import_image('src', 'graphics','level', 'clouds', 'large_cloud'),
         }
 
     def run(self):

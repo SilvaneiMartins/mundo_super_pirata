@@ -4,10 +4,15 @@ from os.path import join
 
 class Player(pygame.sprite.Sprite):
 
-    def __init__(self, pos, groups, collision_sprites, sem_collision_sprites):
+    def __init__(self, pos, groups, collision_sprites, sem_collision_sprites, frames):
+        # setup geral
         super().__init__(groups)
-        self.image = pygame.image.load(join('src', 'graphics', 'player', 'idle', '0.png'))
         self.z = Z_LAYERS['main']
+
+        # imagem
+        self.frames, self.frame_index = frames, 0
+        self.state, self.facing_right = 'idle', True
+        self.image = self.frames['idle'][self.frame_index]
 
         # rects
         self.rect = self.image.get_frect(topleft = pos)
