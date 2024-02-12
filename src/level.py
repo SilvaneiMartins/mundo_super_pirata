@@ -14,4 +14,4 @@ class Level:
             print(surf)
 
     def run(self):
-        self.display_surface.fill('red')
+        self.display_surface.fill('gray')

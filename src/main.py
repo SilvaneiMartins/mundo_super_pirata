@@ -13,8 +13,8 @@ class Game:
         pygame.display.set_caption(
             "Mundo do Super Pirada - by: Silvanei Martins")
 
-        self.tmx_maps = {0: load_pygame(join('..', 'data', 'levels', 'omni.tmx'))}
-        self.current_stage = Level(self.tmx_maps[0])
+        self.tmx_map = {0: load_pygame(join('src', 'data', 'levels', 'omni.tmx'))}
+        self.current_stage = Level(self.tmx_map[0])
 
     def run(self):
         while True:
