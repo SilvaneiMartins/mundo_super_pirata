@@ -12,18 +12,20 @@ class Game:
             (WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption(
             "Mundo do Super Pirada - by: Silvanei Martins")
+        self.clock = pygame.time.Clock()
 
-        self.tmx_map = {0: load_pygame(join('src', 'data', 'levels', 'omni.tmx'))}
-        self.current_stage = Level(self.tmx_map[0])
+        self.tmx_maps = {0: load_pygame(join('src', 'data', 'levels', 'omni.tmx'))}
+        self.current_stage = Level(self.tmx_maps[0])
 
     def run(self):
         while True:
+            dt = self.clock.tick(FPS) / 1000
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
-            self.current_stage.run()
+            self.current_stage.run(dt)
             pygame.display.update()
 
 
