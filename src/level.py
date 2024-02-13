@@ -2,6 +2,7 @@ from settings import *
 from sprites import Sprite, AnimatedSprite, Spike, MovingSprite
 from player import Player
 from groups import AllSprites
+from enemies import Tooth, Shell, Pearl
 
 from random import uniform
 
@@ -15,8 +16,14 @@ class Level:
         self.collision_sprites = pygame.sprite.Group()
         self.sem_collision_sprites = pygame.sprite.Group()
         self.damage_sprites = pygame.sprite.Group()
+        self.tooth_sprites = pygame.sprite.Group()
+        self.pearl_sprites = pygame.sprite.Group()
 
+        # setup
         self.setup(tmx_map, level_frames)
+
+        # frames
+        self.pearl_surf = level_frames['pearl']
 
     def setup(self, tmx_map, level_frames):
 
@@ -39,11 +46,14 @@ class Level:
         # bg details
         for obj in tmx_map.get_layer_by_name('BG details'):
             if obj.name == 'static':
-                Sprite((obj.x, obj.y), obj.image, self.all_sprites, z = Z_LAYERS['bg tiles'])
+                Sprite((obj.x, obj.y), obj.image,
+                       self.all_sprites, z=Z_LAYERS['bg tiles'])
             else:
-                AnimatedSprite((obj.x, obj.y), level_frames[obj.name], self.all_sprites, Z_LAYERS['bg tiles'])
+                AnimatedSprite(
+                    (obj.x, obj.y), level_frames[obj.name], self.all_sprites, Z_LAYERS['bg tiles'])
                 if obj.name == 'candle':
-                    AnimatedSprite((obj.x, obj.y) + vector(-20,-20), level_frames['candle_light'], self.all_sprites, Z_LAYERS['bg tiles'])
+                    AnimatedSprite((obj.x, obj.y) + vector(-20, -20),
+                                   level_frames['candle_light'], self.all_sprites, Z_LAYERS['bg tiles'])
 
         # objects
         for obj in tmx_map.get_layer_by_name('Objects'):
@@ -86,28 +96,29 @@ class Level:
         for obj in tmx_map.get_layer_by_name('Moving Objects'):
             if obj.name == 'spike':
                 Spike(
-                    pos = (obj.x + obj.width, obj.y + obj.height),
-                    surf = level_frames['spike'],
-                    radius = obj.properties['radius'],
-                    speed = obj.properties['speed'],
-                    start_angle = obj.properties['start_angle'],
-                    end_angle = obj.properties['end_angle'],
-                    groups = (self.all_sprites, self.damage_sprites)
+                    pos=(obj.x + obj.width / 2, obj.y + obj.height / 2),
+                    surf=level_frames['spike'],
+                    radius=obj.properties['radius'],
+                    speed=obj.properties['speed'],
+                    start_angle=obj.properties['start_angle'],
+                    end_angle=obj.properties['end_angle'],
+                    groups=(self.all_sprites, self.damage_sprites)
                 )
                 for radius in range(0, obj.properties['radius'], 20):
                     Spike(
-                        pos = (obj.x + obj.width, obj.y + obj.height),
-                        surf = level_frames['spike_chain'],
-                        radius = radius,
-                        speed = obj.properties['speed'],
-                        start_angle = obj.properties['start_angle'],
-                        end_angle = obj.properties['end_angle'],
-                        groups = self.all_sprites,
-                        z = Z_LAYERS['bg details']
+                        pos=(obj.x + obj.width / 2, obj.y + obj.height / 2),
+                        surf=level_frames['spike_chain'],
+                        radius=radius,
+                        speed=obj.properties['speed'],
+                        start_angle=obj.properties['start_angle'],
+                        end_angle=obj.properties['end_angle'],
+                        groups=self.all_sprites,
+                        z=Z_LAYERS['bg details']
                     )
             else:
                 frames = level_frames[obj.name]
-                groups = (self.all_sprites, self.sem_collision_sprites) if obj.properties['platform'] else (self.all_sprites, self.damage_sprites)
+                groups = (self.all_sprites, self.sem_collision_sprites) if obj.properties['platform'] else (
+                    self.all_sprites, self.damage_sprites)
                 if obj.width > obj.height:  # horizontal
                     move_dir = 'x'
                     start_pos = (obj.x, obj.y + obj.height / 2)
@@ -117,21 +128,59 @@ class Level:
                     start_pos = (obj.x + obj.width / 2, obj.y)
                     end_pos = (obj.x + obj.width / 2, obj.y + obj.height)
                 speed = obj.properties['speed']
-                MovingSprite(frames, groups, start_pos, end_pos, move_dir, speed, obj.properties['flip'])
+                MovingSprite(frames, groups, start_pos, end_pos,
+                             move_dir, speed, obj.properties['flip'])
 
                 if obj.name == 'saw':
                     if move_dir == 'x':
-                        y = start_pos[1] - level_frames['saw_chain'].get_height() / 2
+                        y = start_pos[1] - \
+                            level_frames['saw_chain'].get_height() / 2
                         left, right = int(start_pos[0]), int(end_pos[0])
                         for x in range(left, right, 20):
-                            Sprite((x, y), level_frames['saw_chain'], self.all_sprites, Z_LAYERS['bg details'])
+                            Sprite(
+                                (x, y), level_frames['saw_chain'], self.all_sprites, Z_LAYERS['bg details'])
                     else:
-                        x = start_pos[0] - level_frames['saw_chain'].get_width() / 2
+                        x = start_pos[0] - \
+                            level_frames['saw_chain'].get_width() / 2
                         top, bottom = int(start_pos[1]), int(end_pos[1])
                         for y in range(top, bottom, 20):
-                            Sprite((x, y), level_frames['saw_chain'], self.all_sprites, Z_LAYERS['bg details'])
+                            Sprite(
+                                (x, y), level_frames['saw_chain'], self.all_sprites, Z_LAYERS['bg details'])
+
+        # enemies
+        for obj in tmx_map.get_layer_by_name('Enemies'):
+            if obj.name == 'tooth':
+                Tooth((obj.x, obj.y), level_frames['tooth'], (
+                    self.all_sprites, self.damage_sprites, self.tooth_sprites), self.collision_sprites)
+
+            if obj.name == 'shell':
+                Shell(
+                    pos = (obj.x, obj.y), 
+                    frames = level_frames['shell'],
+                    groups = (self.all_sprites, self.collision_sprites), 
+                    reverse = obj.properties['reverse'], 
+                    player = self.player,
+                    create_pearl = self.create_pearl
+                )
+
+    def create_pearl(self, pos, direction):
+        Pearl(pos, (self.all_sprites, self.damage_sprites, self.pearl_sprites), self.pearl_surf, direction, 150)
+
+    def pearl_collision(self):
+        for sprite in self.collision_sprites:
+            pygame.sprite.spritecollide(sprite, self.pearl_sprites, True)
+
+    def hit_collision(self):
+        for sprite in self.damage_sprites:
+            if sprite.rect.colliderect(self.player.hitbox_rect):
+                if hasattr(sprite, 'pearl'):
+                    sprite.kill()
 
     def run(self, dt):
         self.all_sprites.update(dt)
+
         self.display_surface.fill('black')
+        self.pearl_collision()
+        self.hit_collision()
+
         self.all_sprites.draw(self.player.hitbox_rect.center)
