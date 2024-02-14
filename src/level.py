@@ -1,5 +1,5 @@
 from settings import *
-from sprites import Sprite, AnimatedSprite, Spike, MovingSprite
+from sprites import Sprite, AnimatedSprite, Spike, MovingSprite, Item, ParticleEffectSprinte
 from player import Player
 from groups import AllSprites
 from enemies import Tooth, Shell, Pearl
@@ -18,12 +18,14 @@ class Level:
         self.damage_sprites = pygame.sprite.Group()
         self.tooth_sprites = pygame.sprite.Group()
         self.pearl_sprites = pygame.sprite.Group()
+        self.item_sprites = pygame.sprite.Group()
 
         # setup
         self.setup(tmx_map, level_frames)
 
         # frames
         self.pearl_surf = level_frames['pearl']
+        self.particle_frames = level_frames['particle']
 
     def setup(self, tmx_map, level_frames):
 
@@ -155,26 +157,53 @@ class Level:
 
             if obj.name == 'shell':
                 Shell(
-                    pos = (obj.x, obj.y), 
-                    frames = level_frames['shell'],
-                    groups = (self.all_sprites, self.collision_sprites), 
-                    reverse = obj.properties['reverse'], 
-                    player = self.player,
-                    create_pearl = self.create_pearl
+                    pos=(obj.x, obj.y),
+                    frames=level_frames['shell'],
+                    groups=(self.all_sprites, self.collision_sprites),
+                    reverse=obj.properties['reverse'],
+                    player=self.player,
+                    create_pearl=self.create_pearl
                 )
 
+        # items
+        for obj in tmx_map.get_layer_by_name('Items'):
+            Item(obj.name, (obj.x + TILE_SIZE / 2, obj.y + TILE_SIZE / 2),
+                 level_frames['items'][obj.name], (self.all_sprites, self.item_sprites))
+
     def create_pearl(self, pos, direction):
-        Pearl(pos, (self.all_sprites, self.damage_sprites, self.pearl_sprites), self.pearl_surf, direction, 150)
+        Pearl(pos, (self.all_sprites, self.damage_sprites,
+              self.pearl_sprites), self.pearl_surf, direction, 150)
 
     def pearl_collision(self):
         for sprite in self.collision_sprites:
-            pygame.sprite.spritecollide(sprite, self.pearl_sprites, True)
+            sprite = pygame.sprite.spritecollide(
+                sprite, self.pearl_sprites, True)
+            if sprite:
+                ParticleEffectSprinte((sprite[0].rect.center),
+                                      self.particle_frames, self.all_sprites)
 
     def hit_collision(self):
         for sprite in self.damage_sprites:
             if sprite.rect.colliderect(self.player.hitbox_rect):
                 if hasattr(sprite, 'pearl'):
                     sprite.kill()
+                    ParticleEffectSprinte(
+                        (sprite.rect.center),  self.particle_frames, self.all_sprites)
+
+    def item_collision(self):
+        if self.item_sprites:
+            item_sprites = pygame.sprite.spritecollide(
+                self.player, self.item_sprites, True)
+            if item_sprites:
+                ParticleEffectSprinte(
+                    (item_sprites[0].rect.center), self.particle_frames, self.all_sprites)
+
+    def attack_collision(self):
+        for target in self.pearl_sprites.sprites() + self.tooth_sprites.sprites():
+            facing_target = self.player.rect.centerx < target.rect.centerx and self.player.facing_right or \
+                            self.player.rect.centerx > target.rect.centerx and not self.player.facing_right
+            if target.rect.colliderect(self.player.rect) and self.player.attacking and facing_target:
+                target.reverse()
 
     def run(self, dt):
         self.all_sprites.update(dt)
@@ -182,5 +211,7 @@ class Level:
         self.display_surface.fill('black')
         self.pearl_collision()
         self.hit_collision()
+        self.item_collision()
+        self.attack_collision()
 
         self.all_sprites.draw(self.player.hitbox_rect.center)

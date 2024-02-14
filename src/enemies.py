@@ -16,6 +16,9 @@ class Tooth(pygame.sprite.Sprite):
         self.collision_rects = [sprite.rect for sprite in collision_sprites]
         self.speed = 200
 
+    def reverse(self):
+        self.direction *= -1
+
     def update(self, dt):
 
         # animação
@@ -111,6 +114,9 @@ class Pearl(pygame.sprite.Sprite):
         self.z = Z_LAYERS['main']
         self.timers = {'lifetime': Timer(5000)}
         self.timers['lifetime'].activate()
+
+    def reverse(self):
+        print('pearl reverse')
 
     def update(self, dt):
         for timer in self.timers.values():
