@@ -52,6 +52,8 @@ class Game:
 			'cloud_large': import_image('src', 'graphics','level', 'clouds', 'large_cloud'),
         }
 
+        self.font = pygame.font.Font(join('src', 'graphics', 'ui', 'runescape_uf.ttf'), 40)
+
         self.ui_frames = {
             'heart': import_folder('src', 'graphics', 'ui', 'heart'),
             'coin': import_folder('src', 'graphics', 'ui', 'coin'),
@@ -67,9 +69,10 @@ class Game:
 
             # executa o level atual
             self.current_stage.run(dt)
+            self.ui.update(dt)
 
-            # debug
-            debug(self.data.coins)
+            # # debug
+            # debug(self.data.coins)
 
             # atualiza a tela
             pygame.display.update()
