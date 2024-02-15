@@ -2,6 +2,9 @@ from settings import *
 from level import Level
 from pytmx.util_pygame import load_pygame
 from os.path import join
+from data import Data
+from debug import debug
+from ui import UI
 
 from support import *
 
@@ -14,8 +17,10 @@ class Game:
         self.clock = pygame.time.Clock()
         self.import_assets()
 
+        self.ui = UI(self.font, self.ui_frames)
+        self.data = Data(self.ui)
         self.tmx_maps = {0: load_pygame(join('src', 'data', 'levels', 'omni.tmx'))}
-        self.current_stage = Level(self.tmx_maps[0], self.level_frames)
+        self.current_stage = Level(self.tmx_maps[0], self.level_frames, self.data)
 
     def import_assets(self):
         self.level_frames = {
@@ -47,6 +52,11 @@ class Game:
 			'cloud_large': import_image('src', 'graphics','level', 'clouds', 'large_cloud'),
         }
 
+        self.ui_frames = {
+            'heart': import_folder('src', 'graphics', 'ui', 'heart'),
+            'coin': import_folder('src', 'graphics', 'ui', 'coin'),
+        }
+
     def run(self):
         while True:
             dt = self.clock.tick() / 1000
@@ -55,9 +65,14 @@ class Game:
                     pygame.quit()
                     sys.exit()
 
+            # executa o level atual
             self.current_stage.run(dt)
-            pygame.display.update()
 
+            # debug
+            debug(self.data.coins)
+
+            # atualiza a tela
+            pygame.display.update()
 
 if __name__ == '__main__':
     game = Game()

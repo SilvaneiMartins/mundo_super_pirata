@@ -206,7 +206,7 @@
   <object id="38" name="tooth" gid="225" x="1344" y="576" width="48" height="46"/>
   <object id="39" name="shell" gid="224" x="576" y="448" width="76" height="46">
    <properties>
-    <property name="reverse" type="bool" value="true"/>
+    <property name="reverse" type="bool" value="false"/>
    </properties>
   </object>
   <object id="76" name="tooth" gid="225" x="1408" y="256" width="48" height="46"/>
