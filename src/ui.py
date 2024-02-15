@@ -26,15 +26,15 @@ class UI:
         for heart in range(amount):
             x = 10 + heart * (self.heart_surf_width + self.heart_padding)
             y = 10
-            Heart((x, y), self.heart_frames, self.sprites)
+            Heart((x,y), self.heart_frames, self.sprites)
 
     def display_text(self):
         if self.coin_timer.active:
-            text_surf = self.font.render(str(self.coin_amount), False, 'White')
-            text_rect = text_surf.get_frect(topleft=(16, 34))
+            text_surf = self.font.render(str(self.coin_amount), False, '#33323d')
+            text_rect = text_surf.get_frect(topleft = (16,34))
             self.display_surface.blit(text_surf, text_rect)
 
-            coin_rect = self.coin_surf.get_frect(center=text_rect.bottomleft).move(0, -6)
+            coin_rect = self.coin_surf.get_frect(center = text_rect.bottomleft).move(0,-6)
             self.display_surface.blit(self.coin_surf, coin_rect)
 
     def show_coins(self, amount):
@@ -66,5 +66,5 @@ class Heart(AnimatedSprite):
         if self.active:
             self.animate(dt)
         else:
-            if randint(0, 2000) == 1:
+            if randint(0,2000) == 1:
                 self.active = True
