@@ -1,6 +1,38 @@
 from settings import *
 from sprites import Sprite, Cloud
 from random import choice, randint
+from timer import Timer
+
+
+class WorldSprites(pygame.sprite.Group):
+
+    def __init__(self, data):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+        self.data = data
+        self.offset = vector()
+
+    def draw(self, target_pos):
+        self.offset.x = -(target_pos[0] - WINDOW_WIDTH / 2)
+        self.offset.y = -(target_pos[1] - WINDOW_HEIGHT / 2)
+
+        # background
+        for sprite in sorted(self, key = lambda sprite: sprite.z):
+            if sprite.z <= Z_LAYERS['main']:
+                if hasattr(sprite, 'icon'):
+                    self.display_surface.blit(sprite.image, sprite.rect.topleft + self.offset + vector(0,-28))
+                else:
+                    self.display_surface.blit(sprite.image, sprite.rect.topleft + self.offset)
+
+        # main
+        for sprite in sorted(self, key = lambda sprite: sprite.rect.centery):
+            if sprite.z == Z_LAYERS['main']:
+                if hasattr(sprite, 'icon'):
+                    offset_pos = sprite.rect.topleft + self.offset
+                    self.display_surface.blit(sprite.image, offset_pos + vector(0, -28))
+                else: 
+                    offset_pos = sprite.rect.topleft + self.offset
+                    self.display_surface.blit(sprite.image, offset_pos)
 
 
 class AllSprites(pygame.sprite.Group):
@@ -32,17 +64,17 @@ class AllSprites(pygame.sprite.Group):
             # grandes nuvens
             self.large_cloud_speed = 50
             self.large_cloud_x = 0
-            self.large_cloud_tiles = int(
-                self.width / self.large_cloud.get_width()) + 2
+            self.large_cloud_tiles = int(self.width / self.large_cloud.get_width()) + 2
             self.large_cloud_width, self.large_cloud_height = self.large_cloud.get_size()
 
             # pequenas nuvens
-            # cronômetro -> nuvem a cada 2,5 segundos
             # muitas nuvens por padrão
+            self.cloud_timer = Timer(2500, self.create_cloud, True)
+            self.cloud_timer.activate()
             for cloud in range(20):
                 pos = (randint(0, self.width), randint(self.borders['top'], self.horizon_line))
                 surf = choice(self.small_clouds)
-                Cloud(pos, surf, 1)
+                Cloud(pos, surf, self)
 
     def camera_constraint(self):
         self.offset.x = self.offset.x if self.offset.x < self.borders[
@@ -76,12 +108,18 @@ class AllSprites(pygame.sprite.Group):
             top = self.horizon_line - self.large_cloud_height + self.offset.y
             self.display_surface.blit(self.large_cloud, (left, top))
 
+    def create_cloud(self):
+        pos = (randint(self.width, self.width + 200), randint(self.borders['top'], self.horizon_line))
+        surf = choice(self.small_clouds)
+        Cloud(pos, surf, self)
+
     def draw(self, target_pos, dt):
         self.offset.x = -(target_pos[0] - WINDOW_WIDTH / 2)
         self.offset.y = -(target_pos[1] - WINDOW_HEIGHT / 2)
         self.camera_constraint()
 
         if self.sky:
+            self.cloud_timer.update()
             self.draw_sky()
             self.draw_large_cloud(dt)
 
